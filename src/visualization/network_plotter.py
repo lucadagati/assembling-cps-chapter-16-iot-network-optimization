@@ -228,7 +228,13 @@ class NetworkPlotter:
             title: Title for the plot
             save_path: Optional path to save the plot
         """
-        fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+        # one panel for the original network, one per MST algorithm and, if
+        # provided, one for the Steiner tree
+        n_panels = 1 + len(mst_results) + (1 if steiner_solution else 0)
+        n_cols = 2
+        n_rows = -(-n_panels // n_cols)
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(8 * n_cols, 6 * n_rows),
+                                 squeeze=False)
         axes = axes.flatten()
         
         G = graph.to_networkx()
@@ -278,7 +284,7 @@ class NetworkPlotter:
             ax.axis('off')
         
         # Plot Steiner solution if available
-        if steiner_solution and len(axes) > len(mst_results):
+        if steiner_solution:
             ax = axes[len(mst_results) + 1]
             
             # Draw all nodes (light)
@@ -306,7 +312,7 @@ class NetworkPlotter:
             ax.axis('off')
         
         # Hide unused subplots
-        for i in range(len(mst_results) + 2, len(axes)):
+        for i in range(n_panels, len(axes)):
             axes[i].set_visible(False)
         
         plt.suptitle(title)

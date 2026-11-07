@@ -5,6 +5,21 @@ All notable changes to the IoT Network Optimization project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-11-07
+
+### Fixed
+- Kruskal ignored edges whose stored `source` was greater than `target`; `IoTGraph.to_networkx` had the same flaw
+- `SteinerSolution.get_score` raised `AttributeError` (solutions now keep a reference to the graph)
+- `PrimMST` raised `StopIteration` on an empty graph
+- `ConstrainedMST` enforced the degree limit on the target node only; it now checks both endpoints and starts from the highest-capacity node
+- Random IoT networks are now always connected
+- `plot_algorithm_comparison` crashed when a Steiner solution was supplied
+- Example scripts and CLI no longer report a cheap partial forest as the "best MST" (`select_best_mst`)
+
+### Changed
+- Core requirements reduced to numpy, networkx, matplotlib, pytest; optional packages in `requirements-extras.txt`
+- README rewritten as a complete usage guide
+
 ## [1.0.0] - 2024-10-13
 
 ### Added

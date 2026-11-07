@@ -7,7 +7,7 @@ with capacity limitations.
 """
 
 from typing import List, Tuple, Set, Dict, Optional, NamedTuple
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import heapq
 from ..models import IoTGraph, Node, NodeType
 
@@ -42,6 +42,7 @@ class SteinerSolution:
     capacity_violations: int
     unconnected_weak_nodes: List[int]
     used_discretionary_nodes: Set[int]
+    graph: Optional[IoTGraph] = field(default=None, repr=False, compare=False)
     
     def get_score(self, alpha: float = 0.5) -> float:
         """
@@ -60,7 +61,9 @@ class SteinerSolution:
         # ACC (Average Connection Cost) component
         acc = self.total_cost / (n * (n - 1)) if n > 1 else 0
         
-        # AOC (Average Operation Cost) component
+        # AOC (Average Operation Cost) component (requires the originating graph)
+        if self.graph is None:
+            return alpha * acc
         aoc = sum(
             self.graph.nodes[node_id].computational_power * 
             len(self.graph.get_neighbors(node_id))
@@ -202,7 +205,8 @@ class GreedySteinerTree(SteinerTreeAlgorithm):
             total_cost=total_cost,
             capacity_violations=violations,
             unconnected_weak_nodes=unconnected_weak,
-            used_discretionary_nodes=set(discretionary_node_ids) & connected_nodes
+            used_discretionary_nodes=set(discretionary_node_ids) & connected_nodes,
+            graph=self.graph
         )
     
     def _find_all_paths(self, discretionary_node_ids: List[int]) -> Dict[int, List[Path]]:

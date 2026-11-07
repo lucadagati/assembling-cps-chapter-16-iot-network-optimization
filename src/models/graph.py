@@ -181,9 +181,9 @@ class IoTGraph:
                       position=node.position)
         
         # Add edges with weights
-        for edge in self.edges.values():
-            if edge.source < edge.target:  # Avoid duplicate edges
-                G.add_edge(edge.source, edge.target, weight=edge.weight)
+        for (u, v), edge in self.edges.items():
+            if u < v:  # edges are stored in both directions: add each once
+                G.add_edge(u, v, weight=edge.weight)
         
         return G
     

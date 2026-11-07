@@ -51,9 +51,12 @@ class KruskalMST(MSTAlgorithm):
         """
         # Get all edges and sort by weight
         edges = []
-        for edge in self.graph.edges.values():
-            if edge.source < edge.target:  # Avoid duplicates
-                edges.append((edge.source, edge.target, edge.weight))
+        # Each undirected edge is stored under both (u, v) and (v, u): keep one.
+        # (Filtering on edge.source < edge.target would drop edges that were
+        # created with source > target.)
+        for (u, v), edge in self.graph.edges.items():
+            if u < v:
+                edges.append((u, v, edge.weight))
         
         edges.sort(key=lambda x: x[2])  # Sort by weight
         
@@ -110,7 +113,7 @@ class PrimMST(MSTAlgorithm):
             start_node: Starting node for the algorithm. If None, uses first node.
         """
         super().__init__(graph)
-        self.start_node = start_node or next(iter(graph.nodes.keys()))
+        self.start_node = start_node if start_node is not None else next(iter(graph.nodes), None)
     
     def solve(self) -> MSTSolution:
         """
@@ -195,8 +198,9 @@ class ConstrainedMST(MSTAlgorithm):
         mst_edges = []
         total_cost = 0.0
         
-        # Start with first node
-        start_node = next(iter(self.graph.nodes.keys()))
+        # Start from the node that tolerates the most connections (a hub),
+        # so that low-capacity nodes are not forced to act as relays.
+        start_node = max(self.graph.nodes, key=self._get_max_degree)
         visited.add(start_node)
         
         # Add all edges from start node
@@ -210,9 +214,9 @@ class ConstrainedMST(MSTAlgorithm):
             weight, source, target = heapq.heappop(heap)
             
             if target not in visited:
-                # Check degree constraints
-                max_allowed = self._get_max_degree(target)
-                if node_degrees[target] < max_allowed:
+                # Both endpoints of the new edge must respect their degree limit
+                if (node_degrees[target] < self._get_max_degree(target)
+                        and node_degrees[source] < self._get_max_degree(source)):
                     visited.add(target)
                     mst_edges.append((source, target))
                     total_cost += weight
@@ -226,6 +230,9 @@ class ConstrainedMST(MSTAlgorithm):
                             if edge_weight is not None:
                                 heapq.heappush(heap, (edge_weight, target, neighbor))
         
+        # Note: with tight degree limits a spanning tree may not exist (or may not
+        # be found by this greedy heuristic); the result is then a spanning forest
+        # with fewer than |V|-1 edges.
         return MSTSolution(
             edges=mst_edges,
             total_cost=total_cost,
@@ -275,3 +282,13 @@ def compare_mst_algorithms(graph: IoTGraph) -> Dict[str, MSTSolution]:
             results[name] = MSTSolution(edges=[], total_cost=float('inf'), algorithm_used=name)
     
     return results
+
+
+def select_best_mst(solutions) -> MSTSolution:
+    """Return the best MST solution among ``solutions`` (iterable of MSTSolution).
+
+    A solution that connects more nodes (more edges) always beats one that
+    connects fewer: a cheap forest produced by a degree-constrained heuristic is
+    not comparable with a spanning tree. Ties are broken by total cost.
+    """
+    return min(solutions, key=lambda sol: (-len(sol.edges), sol.total_cost))

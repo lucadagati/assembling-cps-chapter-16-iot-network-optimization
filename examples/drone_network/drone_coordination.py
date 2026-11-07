@@ -10,7 +10,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from src.models import IoTGraph, Node, Edge, NodeType
-from src.algorithms import solve_steiner_tree_constrained, compare_mst_algorithms
+from src.algorithms import solve_steiner_tree_constrained, compare_mst_algorithms, select_best_mst
 from src.utils import GraphGenerator
 from src.visualization import NetworkPlotter
 import matplotlib.pyplot as plt
@@ -87,7 +87,7 @@ class DroneCoordinationSystem:
         # Algorithm comparison
         if self.steiner_solution and self.mst_solutions:
             print(f"\nAlgorithm Performance:")
-            best_mst = min(self.mst_solutions.values(), key=lambda x: x.total_cost)
+            best_mst = select_best_mst(self.mst_solutions.values())
             print(f"  Best MST cost: {best_mst.total_cost:.2f}")
             print(f"  Steiner Tree cost: {self.steiner_solution.total_cost:.2f}")
             improvement = ((best_mst.total_cost - self.steiner_solution.total_cost) / 
@@ -214,7 +214,7 @@ class DroneCoordinationSystem:
         
         # Network efficiency
         if self.mst_solutions:
-            best_mst = min(self.mst_solutions.values(), key=lambda x: x.total_cost)
+            best_mst = select_best_mst(self.mst_solutions.values())
             efficiency_ratio = self.steiner_solution.total_cost / best_mst.total_cost
             print(f"\nNetwork Efficiency:")
             print(f"  Best MST cost: {best_mst.total_cost:.2f}")

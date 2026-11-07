@@ -21,12 +21,11 @@ def read_requirements():
 setup(
     name="iot-network-optimization",
     version="1.0.0",
-    author="Research Team",
-    author_email="research@example.com",
+    author="Luca D'Agati",
     description="IoT network optimization algorithms for heterogeneous device connectivity",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/example/iot-network-optimization",
+    url="https://github.com/lucadagati/assembling-cps-chapter-16-iot-network-optimization",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -69,8 +68,7 @@ setup(
     },
     keywords="iot, network, optimization, mst, steiner-tree, graph-theory, algorithms",
     project_urls={
-        "Bug Reports": "https://github.com/example/iot-network-optimization/issues",
-        "Source": "https://github.com/example/iot-network-optimization",
-        "Documentation": "https://iot-network-optimization.readthedocs.io/",
+        "Bug Reports": "https://github.com/lucadagati/assembling-cps-chapter-16-iot-network-optimization/issues",
+        "Source": "https://github.com/lucadagati/assembling-cps-chapter-16-iot-network-optimization",
     },
 )

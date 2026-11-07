@@ -11,7 +11,7 @@ import os
 from typing import Optional
 
 from .models import IoTGraph
-from .algorithms import solve_steiner_tree_constrained, compare_mst_algorithms
+from .algorithms import solve_steiner_tree_constrained, compare_mst_algorithms, select_best_mst
 from .utils import GraphGenerator, create_sample_networks
 from .visualization import NetworkPlotter
 
@@ -121,7 +121,7 @@ def print_results(results: dict):
     
     # Best solution
     if "mst" in results and "steiner" in results:
-        best_mst = min(results["mst"].values(), key=lambda x: x.total_cost)
+        best_mst = select_best_mst(results["mst"].values())
         steiner = results["steiner"]
         
         print(f"\nBest Solution:")

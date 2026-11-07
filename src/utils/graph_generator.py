@@ -92,7 +92,35 @@ class GraphGenerator:
                     )
                     graph.add_edge(edge)
         
+        self._ensure_connected(graph, weight_range)
         return graph
+    
+    def _ensure_connected(self, graph: IoTGraph, weight_range: Tuple[float, float]) -> None:
+        """Link the connected components of ``graph`` so the network is connected.
+        
+        Components are bridged through non-weak nodes (weak nodes have capacity 1
+        and cannot act as relays); a weak-only component is attached to the
+        component of the first non-weak node.
+        """
+        components, seen = [], set()
+        for start in graph.nodes:
+            if start in seen:
+                continue
+            comp = set()
+            graph._dfs(start, comp)
+            seen |= comp
+            components.append(comp)
+        if len(components) < 2:
+            return
+        
+        def pick(comp):
+            relays = [n for n in comp if graph.nodes[n].node_type != NodeType.WEAK]
+            return random.choice(sorted(relays or comp))
+        
+        anchor = pick(components[0])
+        for comp in components[1:]:
+            graph.add_edge(Edge(source=anchor, target=pick(comp),
+                                weight=random.uniform(*weight_range)))
     
     def generate_grid_iot_network(self, 
                                 grid_size: int = 4,
